@@ -341,7 +341,7 @@ const SYNASTRY_TOKEN_PLANET_MAP = {
 
 // Parse a synastry blurb token, respecting nested brackets.
 // Returns the resolved string for a single [...] token.
-function parseSynastryToken(tokenBody, aspects) {
+function parseSynastryToken(tokenBody, aspects, { forceOxfordAnd = false } = {}) {
     // tokenBody is everything between the outer [ and ] (bracket-depth-aware).
     // Split by commas at depth 0 only.
     const args = [];
@@ -396,6 +396,7 @@ function parseSynastryToken(tokenBody, aspects) {
         }
         separator = sepRaw || ', ';
     }
+    if (forceOxfordAnd) oxfordAnd = true;
 
     // Parse planet reference(s)
     const atParts = planetRef.split('@').filter(Boolean);
@@ -461,8 +462,18 @@ function resolveSynastryBlurb(template, aspects) {
                 j++;
             }
             // j is now one past the closing ]
-            const tokenBody = template.slice(i + 1, j - 1);
-            let resolved = parseSynastryToken(tokenBody, aspects);
+            const tokenEnd = j; // position of char after ']'
+            // Check for a trailing 'a' suffix (Oxford "and") written outside the token
+            // e.g. [@mars, fallback, 3]a   — consume the 'a' so it isn't emitted literally.
+            // Guard: only consume when 'a' is not immediately followed by another word char
+            // (so we don't eat the start of a real word like "ability").
+            let forceOxfordAnd = false;
+            if (template[tokenEnd] === 'a' && !/[a-zA-Z0-9_]/.test(template[tokenEnd + 1] ?? '')) {
+                forceOxfordAnd = true;
+                j++; // consume the 'a'
+            }
+            const tokenBody = template.slice(i + 1, tokenEnd - 1);
+            let resolved = parseSynastryToken(tokenBody, aspects, { forceOxfordAnd });
 
             // Sentence-start capitalisation: uppercase if preceded by nothing,
             // or by . or ! or ? followed by optional whitespace
