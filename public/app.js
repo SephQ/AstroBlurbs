@@ -178,17 +178,12 @@ const DEFAULT_SYNASTRY_BLURBS = [
     },
     {
         id: 3,
-        text: "[@sun, Nothing stands out] when people see us together. Behind closed doors it is all [@pluto, pretty tame]. Our wounds meet in a place of [@chiron, quiet indifference].",
+        text: "[@sun, Nothing stands out, 3-5, [, ]]a are what define us. Behind closed doors it is all [@pluto, pretty tame, 2-3, [, ]]a. Our wounds meet in a place of [@chiron, quiet indifference].",
         author: "AstroBlurb"
     },
     {
         id: 4,
-        text: "[@venus@mars, There is no spark] between us physically. Emotionally we share [@moon@moon, very little]. Our ideas [@mercury@jupiter, rarely cross paths].",
-        author: "AstroBlurb"
-    },
-    {
-        id: 5,
-        text: "The bond is built on [@saturn, nothing lasting] and tested by [@mars@pluto, nothing extreme]. We grow through [@jupiter, stagnation] and heal through [@chiron@moon, avoidance].",
+        text: "Our chemistry is full of [@venus@mars, nothing, 1-2, [, ]]a. Emotionally we share [@moon@moon, very little, 1-2, [, ]]a. Our ideas [@mercury@jupiter, rarely cross paths, 1-2, [, ]]a.",
         author: "AstroBlurb"
     }
 ];
