@@ -1,0 +1,17 @@
+{
+  "name": "astroblurb-sweph-test",
+  "version": "0.1.0",
+  "description": "Astrology web app using Swiss Ephemeris",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.22.1",
+    "luxon": "^3.7.2",
+    "sweph": "^2.10.3-b-1"
+  }
+}

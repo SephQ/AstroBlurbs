@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroBlurb - Personalised Astrology Blurbs</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/gh/AstroDraw/AstroChart@main/dist/astrochart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌟 AstroBlurb</h1>
+            <p>Create personalised astrology blurbs from your birth chart</p>
+        </header>
+
+        <!-- Profiles Section -->
+        <section id="profilesList" class="card">
+            <div class="section-header">
+                <h2>Your Birth Profiles</h2>
+                <div>
+                    <button id="synastryBtn" class="btn-secondary" style="margin-right: 8px;">Synastry</button>
+                    <button id="newProfileBtn" class="btn-primary">+ New Profile</button>
+                </div>
+            </div>
+            <div id="profilesContainer" class="profiles-grid"></div>
+        </section>
+
+        <!-- Profile Form (hidden by default) -->
+        <section id="profileFormCard" class="card" style="display: none;">
+            <h2>Create New Profile</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="profileName">Name</label>
+                    <input type="text" id="profileName" placeholder="My Profile" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="date">Date of Birth</label>
+                        <input type="date" id="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="time">Time of Birth</label>
+                        <input type="time" id="time" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Birth Location</label>
+                    <input type="text" id="location" placeholder="Search city..." autocomplete="off" required>
+                    <div id="locationResults" class="location-results"></div>
+                </div>
+
+                <div id="selectedLocation" class="selected-location"></div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Save Profile</button>
+                    <button type="button" id="cancelProfile" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </section>
+
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Calculating chart...</p>
+        </div>
+
+        <!-- Blurbs Section -->
+        <section id="blurbsSection" class="card" style="display: none;">
+            <h2 id="blurbSectionTitle">Blurb Templates</h2>
+            
+            <div class="section-header">
+                <h3>Templates (Click to filter)</h3>
+                <div>
+                    <button onclick="showBin()" class="btn-secondary">🗑️ Bin</button>
+                    <button id="newBlurbBtn" class="btn-secondary">+ Create Custom Blurb</button>
+                </div>
+            </div>
+            
+            <div id="blurbTemplates" class="blurb-grid"></div>
+
+            <!-- Custom Blurb Form -->
+            <div id="customBlurbForm" class="custom-blurb-form" style="display: none;">
+                <h4>Create Custom Blurb</h4>
+                <form id="blurbForm">
+                    <div class="form-group">
+                        <label for="blurbText">Blurb Template</label>
+                        <textarea id="blurbText" rows="3" placeholder="Use @sun, @moon, @rising, @venus, @mars, @mercury, @jupiter, @saturn, @mc, @sunH, @moonhouse, etc." required></textarea>
+                        <small>Signs: @sun, @moon, @mercury, @venus, @mars, @jupiter, @saturn, @uranus, @neptune, @pluto, @chiron, @ceres, @pallas, @juno, @vesta, @lilith, @pholus, @eris, @northnode (@NN), @rising (@ascendant), @mc</small><br>
+                        <small>Houses: @sunhouse (@sunH), @moonhouse (@moonH), @plutoH, @northnodeH, etc.</small><br>
+                        <small>Numerology: @LP (@lifepath) - Life Path number 1-9, 11, 22, 33 (11, 22 & 33 are optional)</small>
+                    </div>
+                    
+                    <!-- Dynamic replacement fields will appear here -->
+                    <div id="replacementFields"></div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary btn-submit">Save Blurb</button>
+                        <button type="button" id="cancelBlurb" class="btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Generated Blurbs -->
+            <div id="generatedBlurbs" style="display: none;">
+                <h3>Your Generated Blurbs</h3>
+                <div id="profileFilters" class="profile-filters"></div>
+                <div id="blurbsList"></div>
+            </div>
+        </section>
+
+        <!-- Chart View Section (hidden by default) -->
+        <section id="chartSection" class="card" style="display: none;">
+            <div class="section-header">
+                <h2>Birth Chart for <span id="chartProfileName"></span></h2>
+                <div>
+                    <select id="chartProfileSelector" class="profile-selector"></select>
+                    <button onclick="backToBlurbs()" class="btn-secondary">← Back to Blurbs</button>
+                </div>
+            </div>
+            
+            <div id="chartWheel" class="chart-wheel"></div>
+            <div id="chartDisplay" class="chart-display"></div>
+            
+            <div style="margin-top: 3rem;">
+                <h2>Natal Aspects</h2>
+                <div id="natalAspectsList"></div>
+            </div>
+        </section>
+
+        <!-- Synastry Section (hidden by default) -->
+        <section id="synastrySection" class="card" style="display: none;">
+            <div class="section-header">
+                <h2>Synastry Compatibility</h2>
+                <div>
+                    <button id="shorterDescBtn" onclick="toggleShorterDescriptions()" class="btn-secondary" style="margin-right: 8px;">Shorter Descriptions</button>
+                    <button onclick="backToBlurbs()" class="btn-secondary">← Back to Blurbs</button>
+                </div>
+            </div>
+            
+            <p>Select two profiles to compare:</p>
+            <div id="synastryProfileSelector" class="profiles-grid"></div>
+            
+            <div id="synastryResults" style="display: none; margin-top: 2rem;">
+                <h3>Synastry Aspects</h3>
+                <div id="synastryAspectsList"></div>
+                <p style="margin-top: 2rem; font-size: 0.9em; color: #666;">
+                    Aspect interpretations by <strong>Robert Hand</strong>, sourced from <strong>AstroMatrix.org</strong>
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
