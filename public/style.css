@@ -506,6 +506,23 @@ textarea:focus {
     background: #ee2f3d;
 }
 
+.btn-edit-template {
+    background: #f0f0f0;
+    color: #555;
+    border: 1px solid #ccc;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-edit-template:hover {
+    background: #e0e7ff;
+    border-color: #667eea;
+    color: #667eea;
+}
+
 .blurb-meta {
     display: flex;
     justify-content: space-between;

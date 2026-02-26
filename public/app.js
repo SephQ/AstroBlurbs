@@ -336,7 +336,14 @@ const SYNASTRY_TOKEN_PLANET_MAP = {
     'sun': 'SUN', 'moon': 'MOON', 'mercury': 'MERCURY', 'venus': 'VENUS',
     'mars': 'MARS', 'jupiter': 'JUPITER', 'saturn': 'SATURN', 'uranus': 'URANUS',
     'neptune': 'NEPTUNE', 'pluto': 'PLUTO', 'chiron': 'CHIRON', 'lilith': 'LILITH',
-    'nn': 'N. NODE', 'northnode': 'N. NODE', 'nnode': 'N. NODE'
+    'nn': 'N. NODE', 'northnode': 'N. NODE', 'nnode': 'N. NODE',
+    // Angles
+    'asc': 'Ascendant', 'rising': 'Ascendant', 'ascendant': 'Ascendant',
+    'mc': 'Midheaven', 'midheaven': 'Midheaven',
+    // Asteroids
+    'ceres': 'Ceres', 'pallas': 'Pallas', 'juno': 'Juno', 'vesta': 'Vesta',
+    'eris': 'Eris', 'eros': 'Eros', 'psyche': 'Psyche', 'pholus': 'Pholus',
+    'partoffortune': 'Part Of Fortune', 'pof': 'Part Of Fortune'
 };
 
 // Parse a synastry blurb token, respecting nested brackets.
@@ -895,7 +902,8 @@ function loadBlurbList() {
     
     container.innerHTML = allBlurbs.map((blurb, index) => {
         const isCustom = blurb.createdAt !== undefined;
-        const displayText = blurb.text.length > 360 ? blurb.text.substring(0, 360) + '...' : blurb.text;
+        const rawText = blurb.text.length > 360 ? blurb.text.substring(0, 360) + '...' : blurb.text;
+        const displayText = rawText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
         const filterState = templateFilters[blurb.id] || null;
         
         let filterClass = 'blurb-template-clickable';
@@ -914,6 +922,7 @@ function loadBlurbList() {
                 <p class="blurb-text">${displayText}${filterLabel}</p>
                 <div class="blurb-meta">
                     <span class="blurb-author">by ${blurb.author}</span>
+                    <button class="btn-edit-template" data-blurb-id="${blurb.id}" data-is-custom="${isCustom}" data-is-synastry="${synastryBlurbMode}">Edit</button>
                     <button class="btn-delete" data-blurb-id="${blurb.id}" data-is-custom="${isCustom}">Delete</button>
                 </div>
             </div>
@@ -922,20 +931,33 @@ function loadBlurbList() {
     
     // Add click listeners for template filtering
     document.querySelectorAll('.blurb-template-clickable').forEach((el) => {
-        const blurbId = parseInt(el.dataset.blurbId);
+        const rawId = el.dataset.blurbId;
+        const blurbId = isNaN(rawId) ? rawId : parseFloat(rawId);
         el.addEventListener('click', (e) => {
-            // Don't toggle filter if clicking delete button
-            if (!e.target.classList.contains('btn-delete')) {
+            // Don't toggle filter if clicking delete or edit button
+            if (!e.target.classList.contains('btn-delete') && !e.target.classList.contains('btn-edit-template')) {
                 toggleTemplateFilter(blurbId);
             }
         });
     });
-    
+
+    // Add edit template button listeners
+    document.querySelectorAll('.btn-edit-template').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const rawId = btn.dataset.blurbId;
+            const blurbId = isNaN(rawId) ? rawId : parseFloat(rawId);
+            const isSynastry = btn.dataset.isSynastry === 'true';
+            editTemplate(blurbId, isSynastry);
+        });
+    });
+
     // Add delete button listeners
     document.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const blurbId = parseInt(btn.dataset.blurbId);
+            const rawId = btn.dataset.blurbId;
+            const blurbId = isNaN(rawId) ? rawId : parseFloat(rawId);
             const isCustom = btn.dataset.isCustom === 'true';
             deleteBlurb(blurbId, isCustom);
         });
@@ -963,6 +985,71 @@ function copyBlurb(btn) {
     navigator.clipboard.writeText(text);
     btn.textContent = 'Copied!';
     setTimeout(() => btn.textContent = 'Copy', 2000);
+}
+
+// Edit a blurb template — opens the appropriate create modal pre-populated
+function editTemplate(blurbId, isSynastry) {
+    let blurb;
+    if (isSynastry) {
+        blurb = DEFAULT_SYNASTRY_BLURBS.find(b => b.id === blurbId)
+            || customSynastryBlurbs.find(b => b.id === blurbId);
+    } else {
+        blurb = DEFAULT_BLURBS.find(b => b.id === blurbId)
+            || customBlurbs.find(b => b.id === blurbId);
+    }
+    if (!blurb) return;
+
+    if (isSynastry) {
+        // Open synastry create modal pre-filled
+        modalCounter++;
+        const modalId = `createSynModal_${modalCounter}`;
+        const counter = modalCounter;
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.id = modalId;
+        modal.style.zIndex = 1000 + counter;
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Edit Synastry Blurb</h3>
+                    <button class="close-modal" onclick="closeCreateModal('${modalId}')">×</button>
+                </div>
+                <div class="modal-body">
+                    <form id="createSynForm_${counter}" onsubmit="event.preventDefault(); handleCreateSynastryBlurbSubmit('${modalId}', ${counter})">
+                        <div class="form-group">
+                            <label for="createSynText_${counter}">Blurb Template:</label>
+                            <textarea id="createSynText_${counter}" rows="5" required></textarea>
+                            <small>Token syntax: <code>[@planet, fallback, count, [separator]a]</code></small><br>
+                            <small>Planets: @sun, @moon, @mercury, @venus, @mars, @jupiter, @saturn, @uranus, @neptune, @pluto, @chiron, @lilith, @nn, @asc, @mc, @pallas, @juno, etc.</small><br>
+                            <small>Oxford-and: add <code>]a</code> after the closing bracket, e.g. <code>[@venus, nothing, 3]a</code> → "x, y and z"</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="createSynAuthor_${counter}">Author (optional):</label>
+                            <input type="text" id="createSynAuthor_${counter}" placeholder="Your name" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-submit">Save as New</button>
+                            <button type="button" class="btn btn-secondary" onclick="closeCreateModal('${modalId}')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById(`createSynText_${counter}`).value = blurb.text;
+        if (blurb.author && blurb.author !== 'AstroBlurb') {
+            document.getElementById(`createSynAuthor_${counter}`).value = blurb.author;
+        }
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeCreateModal(modalId); });
+    } else {
+        // Reuse existing create modal, pre-fill text
+        showBlurbForm();
+        // showBlurbForm increments modalCounter before returning
+        const counter = modalCounter;
+        document.getElementById(`createBlurbText_${counter}`).value = blurb.text;
+        // Trigger replacement field generation
+        document.getElementById(`createBlurbText_${counter}`).dispatchEvent(new Event('input'));
+    }
 }
 
 // Delete & Bin functionality
@@ -1111,8 +1198,8 @@ function refreshGeneratedBlurbs() {
                 <span class="profile-label">${blurbData.profileName}</span>
                 <button class="btn-edit" data-blurb-id="${blurbData.id}">Edit</button>
             </div>
-            <p class="blurb-result">${blurbData.text}</p>
-            <p class="blurb-original"><small>From: ${blurbData.original}</small></p>
+            <p class="blurb-result">${blurbData.text.replace(/\n/g, '<br>')}</p>
+            <p class="blurb-original"><small>From: ${blurbData.original.replace(/\n/g, '<br>')}</small></p>
             <button class="btn-copy" data-blurb-id="${blurbData.id}">Copy</button>
         </div>
     `).join('');
@@ -1541,7 +1628,7 @@ function showSynastryBlurbForm() {
                         <label for="createSynText_${counter}">Blurb Template:</label>
                         <textarea id="createSynText_${counter}" rows="5" placeholder="Use [@planet, fallback] tokens, e.g. Our connection is [@venus, special]." required></textarea>
                         <small>Token syntax: <code>[@planet, fallback, count, [separator]]a</code></small><br>
-                        <small>Planets: @sun, @moon, @mercury, @venus, @mars, @jupiter, @saturn, @uranus, @neptune, @pluto, @chiron, @lilith, @nn</small><br>
+                        <small>Planets: @sun, @moon, @rising, @mercury, @venus, @mars, @jupiter, @saturn, @uranus, @neptune, @pluto, @chiron, @lilith, @nn</small><br>
                         <small>Two-planet: @sun@moon finds the first aspect between Sun and Moon in either direction.</small><br>
                         <small>Fallback: If the specified planet(s) have no aspects, the fallback text will be used (e.g. "special" in the example above).</small><br>
                         <small>Multi-keywords: Add a <code>count</code> (e.g. 3) or range (e.g. 2-3) to select multiple keywords. (e.g. [@venus, nothing, 3] -> "x, y, z")</small><br>
