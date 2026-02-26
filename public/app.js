@@ -565,6 +565,7 @@ function setupEventListeners() {
     
     // Blurb creation - now using modal
     document.getElementById('newBlurbBtn').addEventListener('click', showBlurbForm);
+    document.getElementById('newSynBlurbBtn').addEventListener('click', showSynastryBlurbForm);
 }
 
 // Profile UI
@@ -1150,6 +1151,10 @@ function updateFilterButtons() {
     const container = document.getElementById('profileFilters');
     if (!container) return;
 
+    // Toggle which create-blurb button is visible
+    document.getElementById('newBlurbBtn').style.display = synastryBlurbMode ? 'none' : '';
+    document.getElementById('newSynBlurbBtn').style.display = synastryBlurbMode ? '' : 'none';
+
     if (synastryBlurbMode) {
         // Two dropdowns to swap the active synastry pair
         const profiles = profileManager.profiles;
@@ -1511,6 +1516,78 @@ function showBlurbForm() {
 function closeCreateModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.remove();
+}
+
+// Synastry custom blurb creation
+function showSynastryBlurbForm() {
+    modalCounter++;
+    const modalId = `createSynModal_${modalCounter}`;
+    const counter = modalCounter;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = modalId;
+    modal.style.zIndex = 1000 + counter;
+
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Synastry Blurb</h3>
+                <button class="close-modal" onclick="closeCreateModal('${modalId}')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="createSynForm_${counter}" onsubmit="event.preventDefault(); handleCreateSynastryBlurbSubmit('${modalId}', ${counter})">
+                    <div class="form-group">
+                        <label for="createSynText_${counter}">Blurb Template:</label>
+                        <textarea id="createSynText_${counter}" rows="5" placeholder="Use [@planet, fallback] tokens, e.g. Our connection is [@venus, special]." required></textarea>
+                        <small>Token syntax: <code>[@planet, fallback, count, [separator]a]</code></small><br>
+                        <small>Planets: @sun, @moon, @mercury, @venus, @mars, @jupiter, @saturn, @uranus, @neptune, @pluto, @chiron, @lilith, @nn</small><br>
+                        <small>Two-planet: @sun@moon finds the first aspect between Sun and Moon in either direction.</small><br>
+                        <small>Multi-keywords: Add a number (e.g. 3) or range (e.g. 2-3) to select multiple keywords. (e.g. [@venus, nothing, 3] -> "x, y, z")</small><br>
+                        <small>"and" before last keyword: add <code>]a</code> after the closing bracket, e.g. <code>[@venus, nothing, 3]a</code> → "x, y and z"</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="createSynAuthor_${counter}">Author (optional):</label>
+                        <input type="text" id="createSynAuthor_${counter}" placeholder="Your name" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-submit">Save Blurb</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeCreateModal('${modalId}')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeCreateModal(modalId); });
+}
+
+function handleCreateSynastryBlurbSubmit(modalId, counter) {
+    const text = document.getElementById(`createSynText_${counter}`).value.trim();
+    if (!text) return;
+
+    const authorInput = document.getElementById(`createSynAuthor_${counter}`);
+    const author = (authorInput?.value || '').trim() || 'You';
+
+    const newBlurb = {
+        id: Date.now(),
+        text,
+        author,
+        createdAt: new Date().toISOString()
+    };
+
+    customSynastryBlurbs.push(newBlurb);
+    localStorage.setItem('custom_synastry_blurbs', JSON.stringify(customSynastryBlurbs));
+
+    closeCreateModal(modalId);
+    loadBlurbList();
+
+    // Re-evaluate if we're currently in synastry blurb mode
+    if (synastryBlurbMode && currentSynastryAspects.length > 0) {
+        generateSynastryBlurbs();
+        refreshGeneratedBlurbs();
+    }
 }
 
 function updateCreateReplacementFields(counter) {
