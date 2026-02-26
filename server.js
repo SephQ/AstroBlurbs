@@ -4,7 +4,7 @@ const { DateTime } = require('luxon');
 const sweph = require('sweph');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Set ephemeris path
 const ephePath = path.resolve(__dirname, 'ephe');
