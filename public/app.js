@@ -201,20 +201,27 @@ class AspectCalculator {
             Inconjunct: { angle: 150, orb: 2.7, key: 'Inconjunct' }
         };
         this.planets = ['SUN', 'MOON', 'MERCURY', 'VENUS', 'MARS', 'JUPITER',
-            'SATURN', 'URANUS', 'NEPTUNE', 'PLUTO', 'N. NODE', 'CHIRON', 'LILITH'];
+            'SATURN', 'URANUS', 'NEPTUNE', 'PLUTO', 'N. NODE', 'CHIRON', 'LILITH',
+            'CERES', 'PALLAS', 'JUNO', 'VESTA', 'PHOLUS', 'ERIS', 'ASC', 'MC'];
     }
 
     calculateNatal(profile) {
         const aspects = [];
 
+        const getAnglePos = (profile, name) => {
+            if (name === 'ASC') return profile.chart?.houses?.angles?.ascendant;
+            if (name === 'MC') return profile.chart?.houses?.angles?.mc;
+            return profile.chart?.planets[name];
+        };
+
         for (let i = 0; i < this.planets.length; i++) {
             const planet1 = this.planets[i];
-            const p1 = profile.chart?.planets[planet1];
+            const p1 = getAnglePos(profile, planet1);
             if (!p1) continue;
 
             for (let j = i + 1; j < this.planets.length; j++) {
                 const planet2 = this.planets[j];
-                const p2 = profile.chart?.planets[planet2];
+                const p2 = getAnglePos(profile, planet2);
                 if (!p2) continue;
 
                 const distance = this.getAngularDistance(p1.longitude, p2.longitude);
@@ -243,12 +250,18 @@ class AspectCalculator {
     calculate(profile1, profile2) {
         const aspects = [];
 
+        const getPos = (profile, name) => {
+            if (name === 'ASC') return profile.chart?.houses?.angles?.ascendant;
+            if (name === 'MC') return profile.chart?.houses?.angles?.mc;
+            return profile.chart?.planets[name];
+        };
+
         for (const planet1 of this.planets) {
-            const p1 = profile1.chart?.planets[planet1];
+            const p1 = getPos(profile1, planet1);
             if (!p1) continue;
 
             for (const planet2 of this.planets) {
-                const p2 = profile2.chart?.planets[planet2];
+                const p2 = getPos(profile2, planet2);
                 if (!p2) continue;
 
                 const distance = this.getAngularDistance(p1.longitude, p2.longitude);
@@ -297,7 +310,10 @@ class AspectCalculator {
                 'SUN': 'Sun', 'MOON': 'Moon', 'MERCURY': 'Mercury', 'VENUS': 'Venus',
                 'MARS': 'Mars', 'JUPITER': 'Jupiter', 'SATURN': 'Saturn',
                 'URANUS': 'Uranus', 'NEPTUNE': 'Neptune', 'PLUTO': 'Pluto',
-                'N. NODE': 'North Node', 'CHIRON': 'Chiron', 'LILITH': 'Lilith'
+                'N. NODE': 'North Node', 'CHIRON': 'Chiron', 'LILITH': 'Lilith',
+                'CERES': 'Ceres', 'PALLAS': 'Pallas', 'JUNO': 'Juno', 'VESTA': 'Vesta',
+                'PHOLUS': 'Pholus', 'ERIS': 'Eris',
+                'ASC': 'Ascendant', 'MC': 'Midheaven'
             };
             return mapping[p] || p;
         };
@@ -338,11 +354,11 @@ const SYNASTRY_TOKEN_PLANET_MAP = {
     'neptune': 'NEPTUNE', 'pluto': 'PLUTO', 'chiron': 'CHIRON', 'lilith': 'LILITH',
     'nn': 'N. NODE', 'northnode': 'N. NODE', 'nnode': 'N. NODE',
     // Angles
-    'asc': 'Ascendant', 'rising': 'Ascendant', 'ascendant': 'Ascendant',
-    'mc': 'Midheaven', 'midheaven': 'Midheaven',
+    'asc': 'ASC', 'rising': 'ASC', 'ascendant': 'ASC',
+    'mc': 'MC', 'midheaven': 'MC',
     // Asteroids
-    'ceres': 'Ceres', 'pallas': 'Pallas', 'juno': 'Juno', 'vesta': 'Vesta',
-    'eris': 'Eris', 'eros': 'Eros', 'psyche': 'Psyche', 'pholus': 'Pholus',
+    'ceres': 'CERES', 'pallas': 'PALLAS', 'juno': 'JUNO', 'vesta': 'VESTA',
+    'eris': 'ERIS', 'pholus': 'PHOLUS',
     'partoffortune': 'Part Of Fortune', 'pof': 'Part Of Fortune'
 };
 

@@ -507,20 +507,20 @@ textarea:focus {
 }
 
 .btn-edit-template {
-    background: #f0f0f0;
-    color: #555;
-    border: 1px solid #ccc;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
     padding: 4px 10px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.82rem;
-    transition: background 0.2s, border-color 0.2s;
+    transition: opacity 0.2s, transform 0.1s;
+    opacity: 0.85;
 }
 
 .btn-edit-template:hover {
-    background: #e0e7ff;
-    border-color: #667eea;
-    color: #667eea;
+    opacity: 1;
+    transform: translateY(-1px);
 }
 
 .blurb-meta {
