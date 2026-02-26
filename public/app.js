@@ -590,6 +590,7 @@ function setupEventListeners() {
     document.getElementById('cancelProfile').addEventListener('click', hideProfileForm);
     document.getElementById('location').addEventListener('input', handleLocationSearch);
     document.getElementById('synastryBtn').addEventListener('click', showSynastry);
+    document.getElementById('backToBlurbsBtn').addEventListener('click', () => backToBlurbs());
     
     // Blurb creation - now using modal
     document.getElementById('newBlurbBtn').addEventListener('click', showBlurbForm);
@@ -1280,6 +1281,10 @@ function updateFilterButtons() {
     // Toggle which create-blurb button is visible
     document.getElementById('newBlurbBtn').style.display = synastryBlurbMode ? 'none' : '';
     document.getElementById('newSynBlurbBtn').style.display = synastryBlurbMode ? '' : 'none';
+
+    // Toggle synastry nav button
+    document.getElementById('synastryBtn').style.display = synastryBlurbMode ? 'none' : '';
+    document.getElementById('backToBlurbsBtn').style.display = synastryBlurbMode ? '' : 'none';
 
     if (synastryBlurbMode) {
         // Two dropdowns to swap the active synastry pair
