@@ -893,4 +893,9 @@ textarea:focus {
     .blurb-meta {
         font-size: 0.78rem;
     }
+    
+    [class*="btn-"], .filter-btn, .syn-pair-select {
+        font-size: 0.78rem;
+        padding: 6px 10px;
+    }
 }
