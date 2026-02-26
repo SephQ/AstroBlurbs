@@ -173,7 +173,7 @@ const DEFAULT_SYNASTRY_BLURBS = [
     },
     {
         id: 2,
-        text: "Our love language is [@venus, a mystery]. Together we feel [@moon, disconnected], and we fight about [@mars, surprisingly little].",
+        text: "Our love language is [@venus, a mystery]. Together we feel [@moon, disconnected], and our conflict brings [@mars, surprisingly little].",
         author: "AstroBlurb"
     },
     {
@@ -184,6 +184,11 @@ const DEFAULT_SYNASTRY_BLURBS = [
     {
         id: 4,
         text: "Our chemistry is full of [@venus@mars, nothing, 1-2, [, ]]a. Emotionally we share [@moon@moon, very little, 1-2, [, ]]a. Our ideas [@mercury@jupiter, rarely cross paths, 1-2, [, ]]a.",
+        author: "AstroBlurb"
+    },
+    {
+        id: 5,
+        text: "Emotionally, we are about [@moon, nothing, 3]a. When you meet us, we give [@rising, nothing, 4-5]a vibes.\nWhen we fight it's about [@mars, nothing, 3]a, but at our best we get [@venus, nothing, 2-4]a\nHealing together is like [@chiron, nothing, 2-3]a. In our future, I expect [@pluto, nothing, 2-3]a or [@nn, nothing, 2]a.",
         author: "AstroBlurb"
     }
 ];
@@ -938,8 +943,10 @@ function loadBlurbList() {
                 <p class="blurb-text">${displayText}${filterLabel}</p>
                 <div class="blurb-meta">
                     <span class="blurb-author">by ${blurb.author}</span>
-                    <button class="btn-edit-template" data-blurb-id="${blurb.id}" data-is-custom="${isCustom}" data-is-synastry="${synastryBlurbMode}">Edit</button>
-                    <button class="btn-delete" data-blurb-id="${blurb.id}" data-is-custom="${isCustom}">Delete</button>
+                    <div class="blurb-actions">
+                        <button class="btn-edit-template" data-blurb-id="${blurb.id}" data-is-custom="${isCustom}" data-is-synastry="${synastryBlurbMode}">Edit</button>
+                        <button class="btn-delete" data-blurb-id="${blurb.id}" data-is-custom="${isCustom}" data-is-synastry="${synastryBlurbMode}">Delete</button>
+                    </div>
                 </div>
             </div>
         `;
@@ -975,7 +982,8 @@ function loadBlurbList() {
             const rawId = btn.dataset.blurbId;
             const blurbId = isNaN(rawId) ? rawId : parseFloat(rawId);
             const isCustom = btn.dataset.isCustom === 'true';
-            deleteBlurb(blurbId, isCustom);
+            const isSynastry = btn.dataset.isSynastry === 'true';
+            deleteBlurb(blurbId, isCustom, isSynastry);
         });
     });
 }
@@ -1069,28 +1077,43 @@ function editTemplate(blurbId, isSynastry) {
 }
 
 // Delete & Bin functionality
-function deleteBlurb(blurbId, isCustom) {
+function deleteBlurb(blurbId, isCustom, isSynastry = false) {
     if (confirm('Move this blurb to the bin?')) {
-        if (isCustom) {
-            const blurb = customBlurbs.find(b => b.id === blurbId);
-            if (blurb) {
-                deletedBlurbs.push(blurb);
-                customBlurbs = customBlurbs.filter(b => b.id !== blurbId);
-                localStorage.setItem('custom_blurbs', JSON.stringify(customBlurbs));
-                localStorage.setItem('deleted_blurbs', JSON.stringify(deletedBlurbs));
+        if (isSynastry) {
+            if (isCustom) {
+                const blurb = customSynastryBlurbs.find(b => b.id === blurbId);
+                if (blurb) {
+                    deletedSynastryBlurbs.push(blurb);
+                    customSynastryBlurbs = customSynastryBlurbs.filter(b => b.id !== blurbId);
+                    localStorage.setItem('custom_synastry_blurbs', JSON.stringify(customSynastryBlurbs));
+                    localStorage.setItem('deleted_synastry_blurbs', JSON.stringify(deletedSynastryBlurbs));
+                }
+            } else {
+                if (!deletedDefaultSynastryBlurbIds.includes(blurbId)) {
+                    deletedDefaultSynastryBlurbIds.push(blurbId);
+                    localStorage.setItem('deleted_default_synastry_blurb_ids', JSON.stringify(deletedDefaultSynastryBlurbIds));
+                }
             }
+            generatedSynastryBlurbs = generatedSynastryBlurbs.filter(gb => gb.blurbTemplate?.id !== blurbId);
         } else {
-            // Default blurb - just track its ID
-            if (!deletedDefaultBlurbIds.includes(blurbId)) {
-                deletedDefaultBlurbIds.push(blurbId);
-                localStorage.setItem('deleted_default_blurb_ids', JSON.stringify(deletedDefaultBlurbIds));
+            if (isCustom) {
+                const blurb = customBlurbs.find(b => b.id === blurbId);
+                if (blurb) {
+                    deletedBlurbs.push(blurb);
+                    customBlurbs = customBlurbs.filter(b => b.id !== blurbId);
+                    localStorage.setItem('custom_blurbs', JSON.stringify(customBlurbs));
+                    localStorage.setItem('deleted_blurbs', JSON.stringify(deletedBlurbs));
+                }
+            } else {
+                if (!deletedDefaultBlurbIds.includes(blurbId)) {
+                    deletedDefaultBlurbIds.push(blurbId);
+                    localStorage.setItem('deleted_default_blurb_ids', JSON.stringify(deletedDefaultBlurbIds));
+                }
             }
+            generatedBlurbs = generatedBlurbs.filter(gb => gb.blurbTemplate?.id !== blurbId);
+            localStorage.setItem('generated_blurbs', JSON.stringify(generatedBlurbs));
         }
-        
-        // Remove all generated blurbs for this template
-        generatedBlurbs = generatedBlurbs.filter(gb => gb.blurbTemplate?.id !== blurbId);
-        localStorage.setItem('generated_blurbs', JSON.stringify(generatedBlurbs));
-        
+
         loadBlurbList();
         refreshGeneratedBlurbs();
     }

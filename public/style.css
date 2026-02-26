@@ -530,6 +530,13 @@ textarea:focus {
     gap: 10px;
 }
 
+.blurb-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-left: auto;
+}
+
 /* Modal styles */
 .modal-overlay {
     position: fixed;
