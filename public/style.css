@@ -243,20 +243,6 @@ tbody tr:hover {
     color: #333;
 }
 
-@media (max-width: 768px) {
-    header h1 {
-        font-size: 2rem;
-    }
-    
-    .card {
-        padding: 20px;
-    }
-    
-    .info-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 /* Profile Management */
 .section-header {
     display: flex;
@@ -873,4 +859,38 @@ textarea:focus {
 .profile-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2rem;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .blurb-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin: 12px 0;
+    }
+
+    .blurb-template,
+    .blurb-template-clickable {
+        padding: 12px 14px;
+    }
+
+    .blurb-text {
+        font-size: 0.7rem;
+        margin-bottom: 8px;
+    }
+
+    .blurb-meta {
+        font-size: 0.78rem;
+    }
 }
