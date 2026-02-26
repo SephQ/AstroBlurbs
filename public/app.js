@@ -1540,10 +1540,11 @@ function showSynastryBlurbForm() {
                     <div class="form-group">
                         <label for="createSynText_${counter}">Blurb Template:</label>
                         <textarea id="createSynText_${counter}" rows="5" placeholder="Use [@planet, fallback] tokens, e.g. Our connection is [@venus, special]." required></textarea>
-                        <small>Token syntax: <code>[@planet, fallback, count, [separator]a]</code></small><br>
+                        <small>Token syntax: <code>[@planet, fallback, count, [separator]]a</code></small><br>
                         <small>Planets: @sun, @moon, @mercury, @venus, @mars, @jupiter, @saturn, @uranus, @neptune, @pluto, @chiron, @lilith, @nn</small><br>
                         <small>Two-planet: @sun@moon finds the first aspect between Sun and Moon in either direction.</small><br>
-                        <small>Multi-keywords: Add a number (e.g. 3) or range (e.g. 2-3) to select multiple keywords. (e.g. [@venus, nothing, 3] -> "x, y, z")</small><br>
+                        <small>Fallback: If the specified planet(s) have no aspects, the fallback text will be used (e.g. "special" in the example above).</small><br>
+                        <small>Multi-keywords: Add a <code>count</code> (e.g. 3) or range (e.g. 2-3) to select multiple keywords. (e.g. [@venus, nothing, 3] -> "x, y, z")</small><br>
                         <small>"and" before last keyword: add <code>]a</code> after the closing bracket, e.g. <code>[@venus, nothing, 3]a</code> → "x, y and z"</small>
                     </div>
                     <div class="form-group">
